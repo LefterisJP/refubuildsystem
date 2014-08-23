@@ -1,0 +1,13 @@
+# scons stuff
+.sconsign.dblite
+.sconf_temp
+config.log
+
+*.pyc
+*.o
+
+# the ./check binary generated for the unit tests
+check
+
+# malinka/rtags compile commands database
+compile_commands.json
