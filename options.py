@@ -45,17 +45,9 @@ vars.Add(
                  ' Its parent directory is the refu directory', 'obj',
                  PathVariable.PathIsDirCreate))
 
-vars.Add('COMPILER_FLAGS', 'Extra compiler flags that you want to send to '
-         'the provided compiler', '')
 
-vars.Add('LINKER_SHARED_FLAGS', 'Extra flags that would go towards the '
-         'creation of the shared library', '')
-
-vars.Add('LINKER_STATIC_FLAGS', 'Extra flags that would go towards the '
-         'creation of the static library', '')
-
-vars.Add('OUTPUT_NAME', 'The name of the output file, be it a shared or '
-         'deynamic library. Prefix or suffixed will be automatically added by '
+vars.Add('CLIB_OUT_NAME', 'The name of the output for the c library.'
+         ' Prefix or suffixed will be automatically added by '
          'SCONS where needed', 'refu')
 
 vars.Add(

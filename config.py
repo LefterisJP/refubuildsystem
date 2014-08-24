@@ -33,64 +33,44 @@ else:
     env.SetDefault(has_valgrind=True)
 env = conf.Finish()
 
+# ---------------------------------------
+# -- Setup environment for all projects
+# ---------------------------------------
+env['TARGET_SYSTEM'] = platform.system()
 
-# --setup some other stuff
-target_system = platform.system()
-env['TARGET_SYSTEM'] = target_system
-compilerdir = env['COMPILER_DIR']
-compiler_name = env['COMPILER']
-# add general options and defines for the refu project
-if target_system == 'Windows':
+if env['TARGET_SYSTEM'] == 'Windows':
     env.Append(CPPDEFINES={'REFU_WIN32_VERSION': None})
     env.Append(CPPDEFINES={'_WIN32_WINNT': '0x501'})
-elif target_system == 'Linux':
+elif env['TARGET_SYSTEM'] == 'Linux':
     env.Append(CPPDEFINES={'REFU_LINUX_VERSION': None})
     env.Append(CPPDEFINES={'_LARGEFILE64_SOURCE': None})
+    env.Append(CPPDEFINES={'_GNU_SOURCE': None})
 else:
     build_msg("Unsuported Operating System value \"{}\" "
               "Detected...Quitting".format(target_system), "Error")
     Exit(1)
 env.Append(CPPDEFINES={'_FILE_OFFSET_BITS': 64})
 
-# add debug symbols to the compiler if Debug is not 0
+# Debug or not?
 if env['DEBUG'] != 0:
-    add_compiler_field(env, target_system, compiler_name, 'CCFLAGS', 'debug_flags')
+    env.Append(CCFLAGS=["-g"])
     env.Append(CPPDEFINES={'RF_OPTION_DEBUG': None})
 else:
     env.Append(CPPDEFINES={'NDEBUG': None})
 
-# figure out the tools value
-env.Replace(tools=compilers[compiler_name].toolsValues[target_system])
-# if a compiler dir has been given then use that.
-# Not given is the '.' directory
-if compilerdir != '.':
-    build_msg("Using \"{}\" as the compiler directory as instructed"
-              "".format(compilerdir), 'Info', env)
-    env.Replace(ENV={'PATH': compilerdir})
 
-# set compiler defines, and compile and link options
-add_compiler_field(env, target_system, compiler_name, 'CCFLAGS', 'coptions')
-add_compiler_field(env, target_system, compiler_name, 'CPPDEFINES', 'cflags')
-# it is possible that env['LIBS'] does not exist yet here and since
-# inside add_compiler_field I am not using env.Append() I need to make
-# sure that there are no key errors by doing this:
-env['LIBS'] = []
-add_compiler_field(env, target_system, compiler_name, 'LIBS', 'libs')
+# if env['COMPILER'] == 'gcc':
+#     env.Replace(tools=['gcc']])
+# else:
+#     build_msg('Only gcc is supported at the moment', 'Error', env)
 
-
-# setting needed flags, paths and defines
+# set compiler options irrespective of system
+env.Append(CCFLAGS=['-static-libgcc', '-std=gnu99'])
+env.Append(LIBS=['rt', 'pthread', 'm'])
 env.Append(CPPDEFINES={'REFU_COMPILING': None})
 env.Append(CPPPATH=os.path.join(env['CLIB_DIR'], 'include'))
-env.Append(CCFLAGS=env['COMPILER_FLAGS'])
-env.Append(LINKFLAGS=env['LINKER_SHARED_FLAGS'])
 
-
-
-
-
-# -- set some defines depending on options --
-# These are variables from variables.py which contain a value
-# and will be added to the build as preprocessor defines
+# set some defines depending on options --
 vars_for_compile_time = [
     'FGETS_READ_BYTESN',
     'STRINGX_CAPACITY_MULTIPLIER',

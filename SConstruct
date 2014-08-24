@@ -17,9 +17,7 @@ compiler = env['COMPILER']
 env = SConscript('build_system/build_extra/systemcheck/systemcheck.py',
                  exports='env')
 
-
 clib = SConscript(os.path.join(env['CLIB_DIR'], 'SConstruct'), exports='env')
-
 
 # generate help text for the variables
 Help(vars.GenerateHelpText(env))
