@@ -2,6 +2,29 @@ from SCons.Script import *
 from SCons import Action
 
 
+def remove_defines(defines, names):
+    if isinstance(defines, dict):
+        for n in names:
+            try:
+                defines.pop(n)
+            except:
+                pass
+    else:  # should be a list
+        for n in names:
+            try:
+                defines.remove(n)
+                continue
+            except:
+                pass
+            for i, d in enumerate(defines):
+                if isinstance(d, tuple):
+                    if d[0] == n:
+                        defines.pop(i)
+                        break
+
+    return defines
+
+
 def exists(env):
     """
     The exists() function should return a true value if the tool is
@@ -18,20 +41,28 @@ def build_check_str(target, source, env):
 def build_check(target, source, env):
     target_name = os.path.basename(target[0].get_path())
     local_env = env.Clone()
-    local_env.Append(LIBS=['check'])
+    local_env.Append(LIBS='check')
+    clib = local_env.get('CLIB', None)
+    if clib:
+        local_env.Append(LIBS=clib)
+    local_env.Append(LIBPATH=local_env['CLIB_DIR'])
 
     defines = local_env['CPPDEFINES']
-    defines['RF_OPTION_DEBUG'] = None
-    defines['RF_OPTION_INSANITY_CHECKS'] = None
-    defines['CLIB_TESTS_PATH'] = "\\\"" + os.path.join(
-        env['CLIB_DIR'], 'test/') + "\\\""
+    defines = remove_defines(defines, ['RF_OPTION_DEBUG',
+                                       'RF_OPTION_INSANITY_CHECKS'])
+    local_env.Append(CCFLAGS="-g")
     local_env.Replace(CPPDEFINES=defines)
+    local_env.Append(CPPDEFINES={
+        'CLIB_TESTS_PATH':
+        "\\\"" + os.path.join(env['CLIB_DIR'], 'test/') + "\\\""
+    })
 
     local_env.Program('check', source)
-    run = env.Command(target='run', source='check',
-                      action='./check {} {}'.format(
-                          local_env['UNIT_TESTS_OUTPUT'],
-                          local_env['UNIT_TESTS_FORK']))
+    run = local_env.Command(
+        target='run', source='check',
+        action='./check {} {}'.format(
+            local_env['UNIT_TESTS_OUTPUT'],
+            local_env['UNIT_TESTS_FORK']))
     Alias(target_name, run)
 
     if local_env['has_valgrind']:
@@ -44,13 +75,14 @@ def build_check(target, source, env):
             "--num-callers=20",
             "--track-fds=yes"
         ]
-        run_val = env.Command(target='run_val',
-                              source='check',
-                              action=(
-                                  " ".join(valgrind_cmd) +
-                                  " ./check {} {}".format(
-                                      local_env['UNIT_TESTS_OUTPUT'],
-                                      False)))
+        run_val = local_env.Command(
+            target='run_val',
+            source='check',
+            action=(
+                " ".join(valgrind_cmd) +
+                " ./check {} {}".format(
+                    local_env['UNIT_TESTS_OUTPUT'],
+                    False)))
         Alias(target_name, run_val)
 
     # # success

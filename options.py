@@ -1,3 +1,4 @@
+import os
 from build_extra.utils import build_msg
 # -- Get the user provided options --
 
@@ -28,6 +29,22 @@ def sources_string_to_list(s):
 # Initialize the variables object
 vars = Variables(config_file)
 
+
+# Paths - Not Adding as PathVariable, since they may not exist,
+# and as such we need to pull their respective repos
+vars.Add(
+    'CLIB_DIR', 'The root directory of the refu C library.'
+    ' Absolute value',
+    os.path.abspath(os.path.join(os.pardir, 'clib'))
+)
+
+vars.Add(
+    'LANG_DIR', 'The root directory of refulang.'
+    ' Absolute value',
+    os.path.abspath(os.path.join(os.pardir, 'lang'))
+)
+
+
 # Add All the variable options which have
 # to do with the building of the library
 vars.Add('COMPILER', 'The compiler name. Allowed values are: gcc, tcc, msvc',
@@ -46,6 +63,9 @@ vars.Add(
                  PathVariable.PathIsDirCreate))
 
 
+# ------------------------------------------
+# ---------- CLIB Related options ----------
+# ------------------------------------------
 vars.Add('CLIB_OUT_NAME', 'The name of the output for the c library.'
          ' Prefix or suffixed will be automatically added by '
          'SCONS where needed', 'refu')
@@ -158,7 +178,22 @@ vars.Add('HASHMAP_LOAD_FACTOR', 'This option determines when the hashmap '
          'than this value then rehashing of the map will take place.',
          0.7)
 
-# --------- Unit Testing variables --------
+
+# ------------------------------------------
+# ------------ refulang options ------------
+# ------------------------------------------
+
+vars.Add(
+    EnumVariable(
+        'VERBOSE_LEVEL_DEFAULT',
+        'The default verbosity level. Should range between 1 and 4',
+        '1',
+        allowed_values=('1', '2', '3', '4')))
+
+
+# ------------------------------------------
+# ---------- unit testing options ----------
+# ------------------------------------------
 vars.Add(
     EnumVariable(
         'UNIT_TESTS_OUTPUT', 'This options determines the way that the '
