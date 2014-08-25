@@ -33,6 +33,12 @@ def exists(env):
     return True
 
 
+def emit_check(target, source, env):
+    print("TARGETS: {}".format(target))
+    print("SOURCES: {}".format(source))
+    return target, source
+
+
 def build_check_str(target, source, env):
     return "Building Check unit tests for target {}".format(
         target[0].get_path())
@@ -40,13 +46,12 @@ def build_check_str(target, source, env):
 
 def build_check(target, source, env):
     target_name = os.path.basename(target[0].get_path())
-    local_env = env.Clone()
-    local_env.Append(LIBS='check')
-    clib = local_env.get('CLIB', None)
-    if clib:
-        local_env.Append(LIBS=clib)
-    local_env.Append(LIBPATH=local_env['CLIB_DIR'])
 
+    # If we got an emitter cloning the environment seems to not
+    # have an effect
+    # local_env = env.Clone()
+    local_env = env
+    local_env.Append(LIBS='check')
     defines = local_env['CPPDEFINES']
     defines = remove_defines(defines, ['RF_OPTION_DEBUG'])
     local_env.Append(CCFLAGS="-g")
@@ -84,9 +89,6 @@ def build_check(target, source, env):
                     False)))
         Alias(target_name, run_val)
 
-    # setup cleaning (TODO, this does not work for now)
-    local_env.Clean(target_name, check_exec)
-
     # success
     return 0
 
@@ -97,6 +99,7 @@ def generate(env, **kw):
     variables so that the tool can be executed; it may use any keyword
     arguments that the user supplies (see below) to vary its initialization.
     """
-    bld = Builder(action=Action.Action(build_check, build_check_str))
+    bld = Builder(action=Action.Action(build_check, build_check_str),
+                  emmitter=emit_check)
     env.Append(BUILDERS={'Check': bld})
     return True
