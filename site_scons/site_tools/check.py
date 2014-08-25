@@ -48,8 +48,7 @@ def build_check(target, source, env):
     local_env.Append(LIBPATH=local_env['CLIB_DIR'])
 
     defines = local_env['CPPDEFINES']
-    defines = remove_defines(defines, ['RF_OPTION_DEBUG',
-                                       'RF_OPTION_INSANITY_CHECKS'])
+    defines = remove_defines(defines, ['RF_OPTION_DEBUG'])
     local_env.Append(CCFLAGS="-g")
     local_env.Replace(CPPDEFINES=defines)
     local_env.Append(CPPDEFINES={
@@ -57,7 +56,7 @@ def build_check(target, source, env):
         "\\\"" + os.path.join(env['CLIB_DIR'], 'test/') + "\\\""
     })
 
-    local_env.Program('check', source)
+    check_exec = local_env.Program('check', source)
     run = local_env.Command(
         target='run', source='check',
         action='./check {} {}'.format(
@@ -85,7 +84,10 @@ def build_check(target, source, env):
                     False)))
         Alias(target_name, run_val)
 
-    # # success
+    # setup cleaning (TODO, this does not work for now)
+    local_env.Clean(target_name, check_exec)
+
+    # success
     return 0
 
 

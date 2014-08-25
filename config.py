@@ -84,10 +84,10 @@ vars_for_compile_time = [
     'MAX_WORKER_THREADS'
 ]
 
-# These are variables from variables.py which are True/False
+# These are variables from options.py which are True/False
 # and will be added to the build as preprocessor defines (or not)
 truevars_for_compile_time = [
-    'INSANITY_CHECKS',
+    'NULLPTR_CHECKS',
     'SAFE_MEMORY_ALLOCATION',
     'DEBUG',
     'TEXTFILE_ADD_BOM'
