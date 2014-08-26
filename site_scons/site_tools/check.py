@@ -34,9 +34,23 @@ def exists(env):
 
 
 def emit_check(target, source, env):
-    print("TARGETS: {}".format(target))
-    print("SOURCES: {}".format(source))
-    return target, source
+    variant_dir = env.get('CHECK_VARIANT_DIR', 'build_test')
+    test_dir = env.get('CHECK_TEST_DIR', 'test')
+    src_dir = env.get('CHECK_SRC_DIR', 'src')
+    exec_name = env.get('CHECK_EXEC_NAME', 'check_exec')
+
+    # Create a Variant dir for the tests and sources
+    env.VariantDir(os.path.join(variant_dir, test_dir),
+                   test_dir,
+                   duplicate=1)
+    env.VariantDir(os.path.join(variant_dir, src_dir),
+                   src_dir,
+                   duplicate=1)
+
+    new_sources = [os.path.join(variant_dir, s.get_path()) for s in source]
+    env.Clean(target, variant_dir)
+    env.Clean(target, exec_name)
+    return target, new_sources
 
 
 def build_check_str(target, source, env):
@@ -45,12 +59,11 @@ def build_check_str(target, source, env):
 
 
 def build_check(target, source, env):
+    target_dir = os.path.dirname(target[0].get_path())
     target_name = os.path.basename(target[0].get_path())
+    exec_name = os.path.join(target_dir, 'check_exec')
 
-    # If we got an emitter cloning the environment seems to not
-    # have an effect
-    # local_env = env.Clone()
-    local_env = env
+    local_env = env.Clone()
     local_env.Append(LIBS='check')
     defines = local_env['CPPDEFINES']
     defines = remove_defines(defines, ['RF_OPTION_DEBUG'])
@@ -61,10 +74,11 @@ def build_check(target, source, env):
         "\\\"" + os.path.join(env['CLIB_DIR'], 'test/') + "\\\""
     })
 
-    check_exec = local_env.Program('check', source)
+    check_exec = local_env.Program(exec_name, source)
     run = local_env.Command(
-        target='run', source='check',
-        action='./check {} {}'.format(
+        target='run', source=check_exec,
+        action='{} {} {}'.format(
+            exec_name,
             local_env['UNIT_TESTS_OUTPUT'],
             local_env['UNIT_TESTS_FORK']))
     Alias(target_name, run)
@@ -81,14 +95,14 @@ def build_check(target, source, env):
         ]
         run_val = local_env.Command(
             target='run_val',
-            source='check',
+            source=check_exec,
             action=(
                 " ".join(valgrind_cmd) +
-                " ./check {} {}".format(
+                " {} {} {}".format(
+                    exec_name,
                     local_env['UNIT_TESTS_OUTPUT'],
                     False)))
         Alias(target_name, run_val)
-
     # success
     return 0
 
@@ -100,6 +114,6 @@ def generate(env, **kw):
     arguments that the user supplies (see below) to vary its initialization.
     """
     bld = Builder(action=Action.Action(build_check, build_check_str),
-                  emmitter=emit_check)
+                  emitter=emit_check)
     env.Append(BUILDERS={'Check': bld})
     return True
