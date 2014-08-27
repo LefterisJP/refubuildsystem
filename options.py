@@ -44,6 +44,12 @@ vars.Add(
     os.path.abspath(os.path.join(os.pardir, 'lang'))
 )
 
+vars.Add(
+    'BUILD_SYSTEM_DIR', 'The root directory of refu build system.'
+    ' Absolute value',
+    os.path.abspath(os.path.join(os.pardir, 'build_system'))
+)
+
 
 # Add All the variable options which have
 # to do with the building of the library

@@ -21,6 +21,19 @@ update_lang = env.UpdateRepo(
     source=Dir(env['LANG_DIR']))
 Alias('update_lang', update_lang)
 
+update_build_system = env.UpdateRepo(
+    target="update_build_system",
+    source=Dir(env['BUILD_SYSTEM_DIR']))
+Alias('update_build_system', update_build_system)
+
+# very ugly way to update all repos. Gotta use something better
+update_all = env.UpdateRepo(
+    target="update_all",
+    # source=Dir('.'))
+    source='build_system/SConstruct')  # random file to act as target, is ugly
+Alias('update_all', update_all)
+
+
 
 # configure the environment
 env = SConscript('build_system/config.py', exports='env')

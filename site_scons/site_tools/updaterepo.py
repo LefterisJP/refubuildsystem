@@ -1,14 +1,17 @@
+import os
 from SCons.Script import *
 from SCons import Action
 
 
+repos = {
+    'clib': 'ssh://git@lefvps/git/refuclib.git',
+    'lang': 'ssh://git@lefvps/git/refu.git',
+    'build_system': 'ssh://git@lefvps/git/refubuildsystem.git',
+}
+
+
 def determine_url(reponame):
-    d = {
-        'clib': 'ssh://git@lefvps/git/refuclib.git',
-        'lang': 'ssh://git@lefvps/git/refu.git',
-        'build_system': 'ssh://git@lefvps/git/refubuildsystem.git',
-    }
-    return d.get(reponame, None)
+    return repos.get(reponame, None)
 
 
 def exists(env):
@@ -23,29 +26,49 @@ def build_update_str(target, source, env):
     return "Updating repository {}".format(source[0].get_path())
 
 
+def update_single_repo(reponame, source, target_name, url, env):
+    if os.path.lexists(reponame):
+        update_repo = env.Command(
+            target='update_repo_{}'.format(reponame),
+            source=source,
+            action='cd {} && git pull origin'.format(reponame)
+        )
+        env.Alias(target_name, update_repo)
+    else:
+        get_repo = env.Command(
+            target='get_repo_{}'.format(reponame),
+            source=source,
+            action='git clone {} {}'.format(url, reponame)
+        )
+        env.Alias(target_name, get_repo)
+
+
 def build_update(target, source, env):
     target_name = os.path.basename(target[0].get_path())
     local_env = env.Clone()
     reponame = source[0].get_path()
 
-    url = determine_url(reponame)
-    if not url:
-        return -1
+    if reponame != 'build_system/SConstruct':
+        url = determine_url(reponame)
+        if not url:
+            return -1
 
-    if (os.path.lexists(reponame)):
-        print("is there!")
-        update_repo = local_env.Command(
-            target='update_repo', source=source,
-            action='cd {} && git pull origin'.format(reponame)
-        )
-        Alias(target_name, update_repo)
+    # use ssh environment variables of the system if existing
+    pid = os.environ.get('SSH_AGENT_PID')
+    askpass = os.environ.get('SSH_ASKPASS')
+    authsock = os.environ.get('SSH_AUTH_SOCK')
+    if pid:
+        local_env.Append(ENV={'SSH_AGENT_PID': pid})
+    if askpass:
+        local_env.Append(ENV={'SSH_ASKPASS': askpass})
+    if authsock:
+        local_env.Append(ENV={'SSH_AUTH_SOCK': authsock})
+
+    if reponame != 'build_system/SConstruct':
+        update_single_repo(reponame, source, target_name, url, local_env)
     else:
-        get_repo = local_env.Command(
-            target='get_repo', source=source,
-            action='git clone {} {}'.format(url, reponame)
-        )
-        Alias(target_name, get_repo)
-
+        for k, v in repos.iteritems():
+            update_single_repo(k, source, target_name, v, local_env)
     # success
     return 0
 
