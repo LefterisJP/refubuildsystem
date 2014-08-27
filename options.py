@@ -195,8 +195,15 @@ vars.Add(
 # ---------- unit testing options ----------
 # ------------------------------------------
 vars.Add(
+    BoolVariable(
+        'TEST_VIA_VALGRIND',
+        'If true, then tests will also be ran via valgrind',
+        'True')
+)
+
+vars.Add(
     EnumVariable(
-        'UNIT_TESTS_OUTPUT', 'This options determines the way that the '
+        'TEST_OUTPUT', 'This options determines the way that the '
         'outputs of the tests shall be shown. Since we are using Check '
         'as the unit testing framework here is an explanation of the possible '
         'values: '
@@ -212,10 +219,21 @@ vars.Add(
 
 vars.Add(
     BoolVariable(
-        'UNIT_TESTS_FORK', 'This options determines whether the tests will '
+        'TEST_FORK', 'This options determines whether the tests will '
         'run in their own address space. Change it to no only if you need to '
         'debug them with GDB',
         True)
 )
+
+vars.Add(
+    'TEST_CASE',
+    'If given then this is the test case from the unit tests target to run',
+    '')
+
+vars.Add(
+    'TEST_SUITE',
+    'If given then this is the test suite from the unit tests target to run',
+    '')
+
 
 Return('vars')

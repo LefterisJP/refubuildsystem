@@ -48,9 +48,13 @@ def emit_check(target, source, env):
                    duplicate=1)
 
     new_sources = [os.path.join(variant_dir, s.get_path()) for s in source]
+    new_targets = [
+        os.path.splitext(os.path.join(variant_dir, s.get_path()))[0] + 'o'
+        for s in source
+    ]
     env.Clean(target, variant_dir)
     env.Clean(target, exec_name)
-    return target, new_sources
+    return target + new_targets, new_sources
 
 
 def build_check_str(target, source, env):
@@ -62,28 +66,38 @@ def build_check(target, source, env):
     target_dir = os.path.dirname(target[0].get_path())
     target_name = os.path.basename(target[0].get_path())
     exec_name = os.path.join(target_dir, 'check_exec')
+    extra_defines = env.get('CHECK_EXTRA_DEFINES', [])
 
-    local_env = env.Clone()
+    # local_env = env.Clone()
+    local_env = env
     local_env.Append(LIBS='check')
     defines = local_env['CPPDEFINES']
     defines = remove_defines(defines, ['RF_OPTION_DEBUG'])
     local_env.Append(CCFLAGS="-g")
     local_env.Replace(CPPDEFINES=defines)
-    local_env.Append(CPPDEFINES={
-        'CLIB_TESTS_PATH':
-        "\\\"" + os.path.join(env['CLIB_DIR'], 'test/') + "\\\""
-    })
+    local_env.Append(CPPDEFINES=extra_defines)
 
     check_exec = local_env.Program(exec_name, source)
+
+    # if we got specific case or suite modify the environment
+    # and also switch to verbose output
+    if local_env['TEST_CASE'] != '':
+        local_env.Append(ENV={'CK_RUN_CASE': local_env['TEST_CASE']})
+        local_env['TEST_OUTPUT'] = 'CK_VERBOSE'
+    if local_env['TEST_SUITE'] != '':
+        local_env.Append(ENV={'CK_RUN_SUITE': local_env['TEST_SUITE']})
+        local_env['TEST_OUTPUT'] = 'CK_VERBOSE'
+
+    # run the tests
     run = local_env.Command(
         target='run', source=check_exec,
         action='{} {} {}'.format(
             exec_name,
-            local_env['UNIT_TESTS_OUTPUT'],
-            local_env['UNIT_TESTS_FORK']))
+            local_env['TEST_OUTPUT'],
+            local_env['TEST_FORK']))
     Alias(target_name, run)
 
-    if local_env['has_valgrind']:
+    if local_env['has_valgrind'] and local_env['TEST_VIA_VALGRIND']:
         valgrind_cmd = [
             "valgrind",
             "--tool=memcheck",
@@ -100,7 +114,7 @@ def build_check(target, source, env):
                 " ".join(valgrind_cmd) +
                 " {} {} {}".format(
                     exec_name,
-                    local_env['UNIT_TESTS_OUTPUT'],
+                    local_env['TEST_OUTPUT'],
                     False)))
         Alias(target_name, run_val)
     # success
