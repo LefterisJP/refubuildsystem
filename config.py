@@ -16,9 +16,79 @@ def CheckExecutable(context, executable):
         context.Result('OK!')
     return path
 
+
+def CheckCStatementExpr(context):
+    context.Message('Checking if the C compiler supports '
+                    'statements expressions ...')
+    (rc, _) = context.TryRun(
+        "int main(int argc, char **argv)"
+        "{return ({ int x = argc; x == argc ? 0 : 1; });}",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('FAIL!')
+        return False
+
+
+def CheckCTypeOf(context):
+    context.Message('Checking if the C compiler supports '
+                    'the typeof() macro ...')
+    rc = context.TryCompile(
+        "#include <stddef.h>\n"
+        "int main(int argc, char **argv)"
+        "{typeof(int); return 0;}",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
+
+def CheckEndianess(context):
+    context.Message('Checking system byte order ...')
+    (rc, output) = context.TryRun(
+        """#include <stdio.h>\n
+        #include <stdint.h>\n
+        int littleEndianCheck(void)
+        {
+            union
+            {
+                uint32_t i;
+                char c[4];
+            } bint;
+            bint.i = 42;
+            return bint.c[0] == 42;
+        }
+        int main(int argc, char **argv)
+        {printf("%d",littleEndianCheck());return 0;}""",
+        '.c'
+    )
+    if rc != 1:
+        build_msg("Could not compile/run endianess test program. "
+                  "Should not happen")
+        Exit(1)
+
+    if output == "1":
+        context.Result('Little Endian!')
+        return 1
+    else:
+        context.Result('Big Endian!')
+        return 0
+
 Import('env')
 
-conf = Configure(env, custom_tests={'CheckExecutable': CheckExecutable})
+conf = Configure(env, custom_tests={
+    'CheckExecutable': CheckExecutable,
+    'CheckCStatementExpr': CheckCStatementExpr,
+    'CheckCTypeOf': CheckCTypeOf,
+    'CheckEndianess': CheckEndianess,
+})
 
 # Check for existence of check library for unit tests
 if not conf.CheckLibWithHeader('check', 'check.h', 'c'):
@@ -31,7 +101,30 @@ if not conf.CheckExecutable('valgrind'):
     env.SetDefault(has_valgrind=False)
 else:
     env.SetDefault(has_valgrind=True)
+
+# Check if the C compiler supports statement expressions
+if not conf.CheckCStatementExpr():
+    build_msg("Compiler not supported")
+    Exit(1)
+else:
+    env.Append(CPPDEFINES="RF_HAVE_STATEMENT_EXPR")
+
+# Check if the C compiler supports the typeof macro
+if conf.CheckCTypeOf():
+    env.Append(CPPDEFINES="RF_HAVE_TYPEOF")
+
+# Check the size of 'long' data type
+env['LONG_SIZE'] = conf.CheckTypeSize('long')
+
+# Check System endianess
+if conf.CheckEndianess() == 1:
+    env['ENDIANESS'] = 'LITTLE'
+else:
+    env['ENDIANESS'] = 'BIG'
+
 env = conf.Finish()
+
+
 
 # ---------------------------------------
 # -- Setup environment for all projects

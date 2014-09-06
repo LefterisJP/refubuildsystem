@@ -34,13 +34,8 @@ update_all = env.UpdateRepo(
 Alias('update_all', update_all)
 
 
-
 # configure the environment
 env = SConscript('build_system/config.py', exports='env')
-# Perform the system check
-env = SConscript('build_system/build_extra/systemcheck/systemcheck.py',
-                 exports='env')
-
 
 # Build the various repos
 if os.path.lexists(env['CLIB_DIR']):
