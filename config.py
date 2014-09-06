@@ -95,6 +95,11 @@ if not conf.CheckLibWithHeader('check', 'check.h', 'c'):
     build_msg("Need libcheck for unit tests")
     Exit(1)
 
+# Check if we have gperf
+if not conf.CheckExecutable('gperf'):
+    build_msg("Need 'gperf' for perfect hash table generation")
+    Exit(1)
+
 # Check if we can run unit tests via valgrind
 if not conf.CheckExecutable('valgrind'):
     build_msg("Will not run unit tests via valgrind", "Warning", env)

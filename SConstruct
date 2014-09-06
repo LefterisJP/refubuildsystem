@@ -8,7 +8,7 @@ vars = SConscript('build_system/options.py', exports='config_file')
 
 env = Environment(variables=vars,
                   toolpath=['build_system/site_scons/site_tools'],
-                  tools=['default', 'check', 'updaterepo'])
+                  tools=['default', 'check', 'updaterepo', 'gperf'])
 
 # - Targets for updating repositories
 update_clib = env.UpdateRepo(
