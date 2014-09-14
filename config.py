@@ -100,6 +100,16 @@ if not conf.CheckExecutable('gperf'):
     build_msg("Need 'gperf' for perfect hash table generation")
     Exit(1)
 
+# Check if we have antlr4
+if not conf.CheckExecutable('antlr4'):
+    env.SetDefault(has_antlr=False)
+    if env['PARSER_IMPLEMENTATION'] == 'ANTLR':
+        build_msg("Requested an antlr4 parser implementation but 'antlr4' "
+                  "executable was not found in the system")
+        Exit(1)
+else:
+    env.SetDefault(has_antlr=True)
+
 # Check if we can run unit tests via valgrind
 if not conf.CheckExecutable('valgrind'):
     build_msg("Will not run unit tests via valgrind", "Warning", env)

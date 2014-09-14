@@ -196,6 +196,15 @@ vars.Add(
         '1',
         allowed_values=('1', '2', '3', '4')))
 
+vars.Add(
+    EnumVariable('PARSER_IMPLEMENTATION',
+                 'Specify the parser implementation to use in the font end',
+                 'RECURSIVE_DESCENT',
+                 allowed_values=(
+                     'RECURSIVE_DESCENT',
+                     'ANTLR'
+                 ))
+)
 
 # ------------------------------------------
 # ---------- unit testing options ----------
