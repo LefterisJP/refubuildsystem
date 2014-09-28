@@ -42,6 +42,7 @@ if os.path.lexists(env['CLIB_DIR']):
     clib_static = SConscript(
         os.path.join(env['CLIB_DIR'], 'SConstruct'),
         exports='env')
+    env.Alias('clib', clib_static)
 
 if os.path.lexists(env['LANG_DIR']):
     lang = SConscript(
@@ -51,6 +52,6 @@ if os.path.lexists(env['LANG_DIR']):
     env.Alias('refu', lang)
 
 
-# Default(clib)
+# Default(lang)
 # generate help text for the variables
 Help(vars.GenerateHelpText(env))

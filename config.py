@@ -140,7 +140,6 @@ else:
 env = conf.Finish()
 
 
-
 # ---------------------------------------
 # -- Setup environment for all projects
 # ---------------------------------------
