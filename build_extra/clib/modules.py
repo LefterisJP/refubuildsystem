@@ -106,6 +106,12 @@ modules.append(
 )
 
 modules.append(
+    Module("HTABLE",
+           ['Data_Structures/htable.c'],
+           macro="RF_MODULE_HTABLE")
+)
+
+modules.append(
     Module("BINARY_ARRAY",
            ['Data_Structures/binaryarray.c'],
            macro="RF_MODULE_BINARYARRAY")

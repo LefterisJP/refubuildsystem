@@ -50,6 +50,21 @@ def CheckCTypeOf(context):
         return False
 
 
+def CheckCAttributeCold(context):
+    context.Message('Checking if the C compiler supports '
+                    '__attribute__((cold)) ...')
+    rc = context.TryCompile(
+        "static int __attribute__((cold)) func(int x) { return x; }",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
+
 def CheckEndianess(context):
     context.Message('Checking system byte order ...')
     (rc, output) = context.TryRun(
@@ -88,6 +103,7 @@ conf = Configure(env, custom_tests={
     'CheckCStatementExpr': CheckCStatementExpr,
     'CheckCTypeOf': CheckCTypeOf,
     'CheckEndianess': CheckEndianess,
+    'CheckCAttributeCold': CheckCAttributeCold,
 })
 
 # Check for existence of check library for unit tests
@@ -128,6 +144,13 @@ else:
 if conf.CheckCTypeOf():
     env.Append(CPPDEFINES="RF_HAVE_TYPEOF")
 
+# Check if the C compiler supports the cold attribute
+if conf.CheckCAttributeCold():
+    env['HAVE_ATTRIBUTE_COLD'] = True
+else:
+    env['HAVE_ATTRIBUTE_COLD'] = False
+
+
 # Check the size of 'long' data type
 env['LONG_SIZE'] = conf.CheckTypeSize('long')
 
@@ -165,6 +188,11 @@ if env['DEBUG'] != 0:
 else:
     env.Append(CPPDEFINES={'NDEBUG': None})
 
+# Define the cold attribute macro depending on existence or not
+if env['HAVE_ATTRIBUTE_COLD']:
+    env.Append(CPPDEFINES={"RFATTR_COLD": "__attribute__\(\(cold\)\)"})
+else:
+    env.Append(CPPDEFINES={"RFATTR_COLD": None})
 
 # if env['COMPILER'] == 'gcc':
 #     env.Replace(tools=['gcc']])
