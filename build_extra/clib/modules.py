@@ -56,6 +56,7 @@ modules.append(
             'Internal/rf_internal_mod.c', 'Utils/buffer.c',
             'Utils/array.c',
             'Utils/rf_unicode.c',
+            'Utils/hash.c',
             'Numeric/Integer/conversion.c'])
 )
 

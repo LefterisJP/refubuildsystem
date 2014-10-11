@@ -194,6 +194,12 @@ if env['HAVE_ATTRIBUTE_COLD']:
 else:
     env.Append(CPPDEFINES={"RFATTR_COLD": None})
 
+# Define the endianess
+if env['ENDIANESS'] == 'LITTLE':
+    env.Append(CPPDEFINES={"RF_HAVE_LITTLE_ENDIAN": None})
+else:
+    env.Append(CPPDEFINES={"RF_HAVE_BIG_ENDIAN": None})
+
 # if env['COMPILER'] == 'gcc':
 #     env.Replace(tools=['gcc']])
 # else:
