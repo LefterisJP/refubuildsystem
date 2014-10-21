@@ -2,29 +2,6 @@ from SCons.Script import *
 from SCons import Action
 
 
-def remove_defines(defines, names):
-    if isinstance(defines, dict):
-        for n in names:
-            try:
-                defines.pop(n)
-            except:
-                pass
-    else:  # should be a list
-        for n in names:
-            try:
-                defines.remove(n)
-                continue
-            except:
-                pass
-            for i, d in enumerate(defines):
-                if isinstance(d, tuple):
-                    if d[0] == n:
-                        defines.pop(i)
-                        break
-
-    return defines
-
-
 def exists(env):
     """
     The exists() function should return a true value if the tool is
@@ -72,7 +49,6 @@ def build_check(target, source, env):
     local_env = env
     local_env.Append(LIBS='check')
     defines = local_env['CPPDEFINES']
-    defines = remove_defines(defines, ['RF_OPTION_DEBUG'])
     local_env.Append(CCFLAGS="-g")
     local_env.Replace(CPPDEFINES=defines)
     local_env.Append(CPPDEFINES=extra_defines)

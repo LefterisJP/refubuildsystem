@@ -1,3 +1,4 @@
+import sys
 from utils import build_msg
 
 
@@ -68,3 +69,60 @@ def add_compiler_field(env, os, compiler_name, attribute, compiler_field):
                 env[attribute].update(cdict[compiler_field][v])
             else:
                 env[attribute].extend(cdict[compiler_field][v])
+
+
+def remove_envvar_values(env, var, names):
+    """
+    Removes a list of defined variable values (e.g. CPPDEFINES)
+    from an environment
+    """
+    defines = env[var]
+    if isinstance(defines, dict):
+        for n in names:
+            try:
+                defines.pop(n)
+            except:
+                pass
+    else:  # should be a list
+        for n in names:
+            try:  # if it's simply a list element remove it
+                defines.remove(n)
+                continue
+            except:
+                pass
+
+            for i, d in enumerate(defines):
+                # lists can also contain tuples and dicts of defines
+                if isinstance(d, tuple):
+                    if d[0] == n:
+                        defines.pop(i)
+                        break
+                elif isinstance(d, dict):
+                    try:
+                        d.pop(n)
+                    except:
+                        pass
+
+    env.Replace(var=defines)
+
+
+def set_debug_mode(env, is_debug):
+    # import pdb
+    # pdb.set_trace()
+    if is_debug:
+        env.Append(CCFLAGS=["-g"])
+        env.Append(CPPDEFINES={'RF_OPTION_DEBUG': None})
+        remove_envvar_values(env, 'CPPDEFINES', ['NDEBUG'])
+    else:
+        env.Append(CPPDEFINES={'NDEBUG': None})
+        remove_envvar_values(env, 'CPPDEFINES', ['RF_OPTION_DEBUG'])
+        remove_envvar_values(env, 'CCFLAGS', ['-g'])
+
+    # if is_debug:
+    #     env.AppendUnique(CCFLAGS=["-g"])
+    #     env.AppendUnique(CPPDEFINES={'RF_OPTION_DEBUG': None})
+    #     remove_envvar_values(env, 'CPPDEFINES', ['NDEBUG'])
+    # else:
+    #     env.Append(CPPDEFINES={'NDEBUG': None})
+    #     remove_envvar_values(env, 'CPPDEFINES', ['RF_OPTION_DEBUG'])
+    #     remove_envvar_values(env, 'CCFLAGS', ['-g'])

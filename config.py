@@ -5,6 +5,7 @@ import os
 from build_extra.utils import build_msg
 from build_extra.config import add_compiler_field
 from build_extra.config import compilers
+from build_extra.config import set_debug_mode
 
 
 def CheckExecutable(context, executable):
@@ -182,11 +183,7 @@ else:
 env.Append(CPPDEFINES={'_FILE_OFFSET_BITS': 64})
 
 # Debug or not?
-if env['DEBUG'] != 0:
-    env.Append(CCFLAGS=["-g"])
-    env.Append(CPPDEFINES={'RF_OPTION_DEBUG': None})
-else:
-    env.Append(CPPDEFINES={'NDEBUG': None})
+set_debug_mode(env, env['DEBUG'] != 0)
 
 # Define the cold attribute macro depending on existence or not
 if env['HAVE_ATTRIBUTE_COLD']:

@@ -113,6 +113,12 @@ modules.append(
 )
 
 modules.append(
+    Module("MEMORY_POOL",
+           ['Utils/fixed_memory_pool.c'],
+           macro="RF_MODULE_MEMORY_POOL")
+)
+
+modules.append(
     Module("BINARY_ARRAY",
            ['Data_Structures/binaryarray.c'],
            macro="RF_MODULE_BINARYARRAY")
