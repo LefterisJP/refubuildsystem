@@ -52,6 +52,8 @@ def build_check(target, source, env):
     local_env.Append(CCFLAGS="-g")
     local_env.Replace(CPPDEFINES=defines)
     local_env.Append(CPPDEFINES=extra_defines)
+    # RF_UNIT_TESTS is only defined for tests
+    local_env.Append(CPPDEFINES=['RF_UNIT_TESTS'])
 
     check_exec = local_env.Program(exec_name, source)
 
