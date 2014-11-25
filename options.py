@@ -206,6 +206,15 @@ vars.Add(
                  ))
 )
 
+vars.Add(
+    EnumVariable('LANG_BACKEND',
+                 'Specify the backend of the compiler to use',
+                 'LLVM',
+                 allowed_values=(
+                     'LLVM'
+                 ))
+)
+
 # ------------------------------------------
 # ---------- unit testing options ----------
 # ------------------------------------------

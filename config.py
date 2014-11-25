@@ -117,6 +117,11 @@ if not conf.CheckExecutable('gperf'):
     build_msg("Need 'gperf' for perfect hash table generation")
     Exit(1)
 
+# Check if we have LLVM (check for llvm-config) TODO: find better way
+if not conf.CheckExecutable('llvm-config'):
+    build_msg("Need llvm. At the moment LLVM IR is the only backend")
+    Exit(1)
+
 # Check if we have antlr4
 if not conf.CheckExecutable('antlr4'):
     env.SetDefault(has_antlr=False)
