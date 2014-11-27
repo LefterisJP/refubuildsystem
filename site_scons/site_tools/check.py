@@ -55,7 +55,9 @@ def build_check(target, source, env):
     # RF_UNIT_TESTS is only defined for tests
     local_env.Append(CPPDEFINES=['RF_UNIT_TESTS'])
 
-    check_exec = local_env.Program(exec_name, source)
+    objects = local_env.Object(source)
+    check_exec = local_env.Program(exec_name, objects,
+                                   CC=local_env['linker_exec'])
 
     # if we got specific case or suite modify the environment
     # and also switch to verbose output

@@ -51,9 +51,12 @@ modules = []
 # add all the modules one by one
 modules.append(
     Module("CORE",
-           ['refu.c', 'Utils/endianess.c', 'Utils/log.c',
-            'Utils/localmem.c', 'Utils/math.c',
-            'Persistent/buffers.c', 'Utils/buffer.c',
+           ['refu.c',
+            'Utils/endianess.c',
+            'Utils/log.c',
+            'Utils/math.c',
+            'Persistent/buffers.c',
+            'Utils/buffer.c',
             'Utils/array.c',
             'Utils/rf_unicode.c',
             'Utils/hash.c',
