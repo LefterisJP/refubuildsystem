@@ -44,6 +44,7 @@ def build_check(target, source, env):
     target_name = os.path.basename(target[0].get_path())
     exec_name = os.path.join(target_dir, 'check_exec')
     extra_defines = env.get('CHECK_EXTRA_DEFINES', [])
+    linker_exec = env.get('linker_exec', env['CC'])
 
     # local_env = env.Clone()
     local_env = env
@@ -57,7 +58,7 @@ def build_check(target, source, env):
 
     objects = local_env.Object(source)
     check_exec = local_env.Program(exec_name, objects,
-                                   CC=local_env['linker_exec'])
+                                   CC=linker_exec)
 
     # if we got specific case or suite modify the environment
     # and also switch to verbose output
