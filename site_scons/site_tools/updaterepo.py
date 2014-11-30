@@ -7,6 +7,7 @@ repos = {
     'clib': 'ssh://git@lefvps/git/refuclib.git',
     'lang': 'ssh://git@lefvps/git/refu.git',
     'build_system': 'ssh://git@lefvps/git/refubuildsystem.git',
+    'documentation': 'ssh://git@lefvps/git/refudocumentation.git',
 }
 
 

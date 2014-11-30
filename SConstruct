@@ -26,6 +26,11 @@ update_build_system = env.UpdateRepo(
     source=Dir(env['BUILD_SYSTEM_DIR']))
 Alias('update_build_system', update_build_system)
 
+update_documentation = env.UpdateRepo(
+    target="update_documentation",
+    source=Dir(env['DOCUMENTATION_DIR']))
+Alias('update_documentation', update_documentation)
+
 # very ugly way to update all repos. Gotta use something better
 update_all = env.UpdateRepo(
     target="update_all",

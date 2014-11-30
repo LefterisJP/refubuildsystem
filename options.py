@@ -50,6 +50,11 @@ vars.Add(
     os.path.abspath(os.path.join(os.pardir, 'build_system'))
 )
 
+vars.Add(
+    'DOCUMENTATION_DIR', 'The root directory of refu documentation.'
+    ' Absolute value',
+    os.path.abspath(os.path.join(os.pardir, 'documentation'))
+)
 
 # Add All the variable options which have
 # to do with the building of the library
