@@ -87,7 +87,6 @@ def remove_envvar_values(env, var, names):
         for n in names:
             try:  # if it's simply a list element remove it
                 defines.remove(n)
-                continue
             except:
                 pass
 
@@ -107,12 +106,13 @@ def remove_envvar_values(env, var, names):
 
 
 def set_debug_mode(env, is_debug):
-    # import pdb
-    # pdb.set_trace()
     if is_debug:
         env.Append(CCFLAGS=["-g"])
         env.Append(CPPDEFINES={'RF_OPTION_DEBUG': None})
         remove_envvar_values(env, 'CPPDEFINES', ['NDEBUG'])
+        # no optimizations
+        env.Append(CCFLAGS=["-O0"])
+        remove_envvar_values(env, 'CCFLAGS', ['-O3', '-O2', '-O1'])
     else:
         env.Append(CPPDEFINES={'NDEBUG': None})
         remove_envvar_values(env, 'CPPDEFINES', ['RF_OPTION_DEBUG'])
