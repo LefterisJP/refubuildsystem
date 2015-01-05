@@ -32,7 +32,7 @@ def update_single_repo(reponame, source, target_name, url, env):
         update_repo = env.Command(
             target='update_repo_{}'.format(reponame),
             source=source,
-            action='cd {} && git pull origin'.format(reponame)
+            action='cd {} && git pull origin master'.format(reponame)
         )
         env.Alias(target_name, update_repo)
     else:
