@@ -19,19 +19,17 @@ def emit_check(target, source, env):
     # Create a Variant dir for the tests and sources
     env.VariantDir(os.path.join(variant_dir, test_dir),
                    test_dir,
-                   duplicate=1)
+                   duplicate=0)
     env.VariantDir(os.path.join(variant_dir, src_dir),
                    src_dir,
-                   duplicate=1)
+                   duplicate=0)
 
+    # TODO: Find out why the emitted sources are not visible in build_check
     new_sources = [os.path.join(variant_dir, s.get_path()) for s in source]
-    new_targets = [
-        os.path.splitext(os.path.join(variant_dir, s.get_path()))[0] + 'o'
-        for s in source
-    ]
+
     env.Clean(target, variant_dir)
     env.Clean(target, exec_name)
-    return target + new_targets, new_sources
+    return  target, new_sources
 
 
 def build_check_str(target, source, env):
@@ -45,9 +43,9 @@ def build_check(target, source, env):
     exec_name = os.path.join(target_dir, 'check_exec')
     extra_defines = env.get('CHECK_EXTRA_DEFINES', [])
     linker_exec = env.get('linker_exec', env['CC'])
+    variant_dir = env.get('CHECK_VARIANT_DIR', 'build_test')
 
-    # local_env = env.Clone()
-    local_env = env
+    local_env = env.Clone()
     local_env.Append(LIBS='check')
     defines = local_env['CPPDEFINES']
     local_env.Append(CCFLAGS="-g")
@@ -56,7 +54,18 @@ def build_check(target, source, env):
     # RF_UNIT_TESTS is only defined for tests
     local_env.Append(CPPDEFINES=['RF_UNIT_TESTS'])
 
-    objects = local_env.Object(source)
+    new_source = []
+    for n in source:
+        path = n.get_path()
+        tail_path = ""
+        while os.path.dirname(path) != '':
+            (head, tail) = os.path.split(path)
+            tail_path = os.path.join(tail, tail_path)
+            path = head
+        new_source.append(os.path.join(path, variant_dir, tail_path.rstrip('/')))
+
+
+    objects = local_env.Object(new_source)
     check_exec = local_env.Program(exec_name, objects,
                                    CC=linker_exec)
 
