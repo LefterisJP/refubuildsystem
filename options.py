@@ -220,6 +220,16 @@ vars.Add(
                  ))
 )
 
+vars.Add('INFO_CTX_BUFF_INITIAL_SIZE',
+         'The initial size in bytes of the info context buffer. This is the '
+         'buffer used by the compiler to store all messages', 512)
+
+vars.Add('INPUT_FILE_BUFF_INITIAL_SIZE',
+         'The initial size in bytes of the buffer that will hold the input of each file', 1024)
+
+vars.Add('INPUT_STRING_STARTING_LINES',
+         'The initial number of lines for the line indexer of the buffered input file', 256)
+
 # ------------------------------------------
 # ---------- unit testing options ----------
 # ------------------------------------------
