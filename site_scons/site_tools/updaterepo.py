@@ -4,10 +4,10 @@ from SCons import Action
 
 
 repos = {
-    'clib': 'ssh://git@lefvps/git/refuclib.git',
-    'lang': 'ssh://git@lefvps/git/refu.git',
-    'build_system': 'ssh://git@lefvps/git/refubuildsystem.git',
-    'documentation': 'ssh://git@lefvps/git/refudocumentation.git',
+    'clib': 'git@github.com:LefterisJP/refuclib.git',
+    'lang': 'git@github.com:LefterisJP/refulang.git',
+    'build_system': 'git@github.com:LefterisJP/refubuildsystem.git',
+    'documentation': 'git@github.com:LefterisJP/refudocumentation.git',
 }
 
 

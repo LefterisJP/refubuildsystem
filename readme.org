@@ -1,0 +1,25 @@
+#+TITLE: Refu build system
+#+AUTHOR: Lefteris Karapetsas
+
+For building you start here.
+
+Dependencies for refu:
+ - [[http://llvm.org/][llvm]]
+ - [[http://check.sourceforge.net/][libcheck]]
+ - For building we need [[http://www.scons.org/][scons]]
+ - For extra memory checks during unit testing, we use [[http://valgrind.org/][valgrind]]
+
+Obtain the dependencies and then simply clone this repo and then follow the guide
+#+begin_src sh
+mkdir refu
+cd refu
+git clone git@github.com:LefterisJP/refubuildsystem.git build_system
+ln -s build_system/SConstruct SConstruct
+scons update_all
+#+end_src
+
+After that you can build the different repos with scons commands like
+#+begin_src sh
+scons clib
+scons lang
+#+end_src
