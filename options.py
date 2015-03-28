@@ -39,9 +39,9 @@ vars.Add(
 )
 
 vars.Add(
-    'LANG_DIR', 'The root directory of refulang.'
+    'LANG_DIR', 'The root directory of the language core.'
     ' Absolute value',
-    os.path.abspath(os.path.join(os.pardir, 'lang'))
+    os.path.abspath(os.path.join(os.pardir, 'core'))
 )
 
 vars.Add(

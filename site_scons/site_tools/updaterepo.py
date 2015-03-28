@@ -5,9 +5,8 @@ from SCons import Action
 
 repos = {
     'clib': 'git@github.com:LefterisJP/refuclib.git',
-    'lang': 'git@github.com:LefterisJP/refulang.git',
+    'lang': 'git@github.com:LefterisJP/refulangcore.git',
     'build_system': 'git@github.com:LefterisJP/refubuildsystem.git',
-    'documentation': 'git@github.com:LefterisJP/refudocumentation.git',
 }
 
 
