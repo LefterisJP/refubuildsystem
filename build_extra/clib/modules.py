@@ -60,7 +60,8 @@ modules.append(
             'Utils/array.c',
             'Utils/rf_unicode.c',
             'Utils/hash.c',
-            'Numeric/Integer/conversion.c'])
+            'Numeric/Integer/conversion.c',
+            'Data_Structures/objset.c'])
 )
 
 modules.append(
