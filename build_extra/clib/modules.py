@@ -68,7 +68,6 @@ modules.append(
     Module("STRING",
            ['String/rf_str_common.c', 'String/rf_str_commonp.c',
             'String/rf_str_conversion.c',
-            'String/rf_str_conversionp.c',
             'String/rf_str_core.c', 'String/rf_str_corex.c',
             'String/rf_str_files.c',
             'String/rf_str_filesx.c', 'String/rf_str_module.c',
