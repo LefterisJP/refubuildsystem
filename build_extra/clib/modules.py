@@ -56,12 +56,13 @@ modules.append(
             'Utils/log.c',
             'Utils/math.c',
             'Persistent/buffers.c',
-            'Utils/buffer.c',
             'Utils/array.c',
             'Utils/rf_unicode.c',
             'Utils/hash.c',
             'Numeric/Integer/conversion.c',
-            'Data_Structures/objset.c'])
+            'Data_Structures/buffer.c',
+            'Data_Structures/objset.c',
+            'Data_Structures/mbuffer.c'])
 )
 
 modules.append(
