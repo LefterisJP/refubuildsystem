@@ -8,7 +8,13 @@ vars = SConscript('build_system/options.py', exports='config_file')
 
 env = Environment(variables=vars,
                   toolpath=['build_system/site_scons/site_tools'],
-                  tools=['default', 'check', 'updaterepo', 'gperf'])
+                  tools=[
+                      'default',
+                      'check',
+                      'updaterepo',
+                      'gperf',
+                      'clangformat'
+                  ])
 
 # - Targets for updating repositories
 update_clib = env.UpdateRepo(
@@ -37,6 +43,17 @@ update_all = env.UpdateRepo(
     # source=Dir('.'))
     source='build_system/SConstruct')  # random file to act as target, is ugly
 Alias('update_all', update_all)
+
+# - Targets for style formatting the repositories
+format_clib = env.ClangFormat(
+    target="format_clib",
+    source=Dir(env['CLIB_DIR']))
+Alias('format_clib', format_clib)
+
+format_core = env.ClangFormat(
+    target="format_core",
+    source=Dir(env['LANG_DIR']))
+Alias('format_ccore', format_core)
 
 
 # configure the environment
