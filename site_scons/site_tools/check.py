@@ -42,6 +42,7 @@ def build_check(target, source, env):
     target_name = os.path.basename(target[0].get_path())
     exec_name = os.path.join(target_dir, 'check_exec')
     extra_defines = env.get('CHECK_EXTRA_DEFINES', [])
+    single_file_opts = env.get('CHECK_SINGLE_FILE_OPTIONS', {})
     linker_exec = env.get('linker_exec', env['CC'])
     variant_dir = env.get('CHECK_VARIANT_DIR', 'build_test')
 
@@ -53,8 +54,8 @@ def build_check(target, source, env):
     local_env.Append(CPPDEFINES=extra_defines)
     # RF_UNIT_TESTS is only defined for tests
     local_env.Append(CPPDEFINES=['RF_UNIT_TESTS'])
-
     new_source = []
+    special_care_objects = []
     for n in source:
         path = n.get_path()
         tail_path = ""
@@ -62,11 +63,17 @@ def build_check(target, source, env):
             (head, tail) = os.path.split(path)
             tail_path = os.path.join(tail, tail_path)
             path = head
-        new_source.append(os.path.join(path, variant_dir, tail_path.rstrip('/')))
-
+        new_path = os.path.join(path, variant_dir, tail_path.rstrip('/'))
+        filename = os.path.basename(tail_path.rstrip('/'))
+        if filename in single_file_opts:
+            special_care_objects.append(local_env.Object(
+                new_path, CCFLAGS=single_file_opts[filename]
+            ))
+        else:
+            new_source.append(new_path)
 
     objects = local_env.Object(new_source)
-    check_exec = local_env.Program(exec_name, objects,
+    check_exec = local_env.Program(exec_name, [objects, special_care_objects],
                                    CC=linker_exec)
 
     # if we got specific case or suite modify the environment

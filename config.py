@@ -207,8 +207,13 @@ else:
 # else:
 #     build_msg('Only gcc is supported at the moment', 'Error', env)
 
+
+# set compiler
+env.Replace(CC=env['COMPILER'])
+# set compiler specific options
+if env['COMPILER'] == 'gcc':
+    env.Append(CCFLAGS=['-static-libgcc', '-std=gnu99'])
 # set compiler options irrespective of system
-env.Append(CCFLAGS=['-static-libgcc', '-std=gnu99'])
 env.Append(LIBS=['rt', 'pthread', 'm'])
 env.Append(CPPDEFINES={'REFU_COMPILING': None})
 env.Append(CPPPATH=os.path.join(env['CLIB_DIR'], 'include'))

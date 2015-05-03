@@ -2,7 +2,7 @@ import os
 from build_extra.utils import build_msg
 # -- Get the user provided options --
 
-allowedCompilers = ['gcc', 'tcc', 'msvc']
+allowedCompilers = ['gcc', 'clang', 'tcc', 'msvc']
 Import('config_file')
 
 
@@ -58,7 +58,10 @@ vars.Add(
 
 # Add All the variable options which have
 # to do with the building of the library
-vars.Add('COMPILER', 'The compiler name. Allowed values are: gcc, tcc, msvc',
+vars.Add('COMPILER',
+         'The compiler name. Allowed values are: {}'.format(
+             ','.join(allowedCompilers)
+         ),
          'gcc', validator=checkCompilerValue)
 
 vars.Add(
