@@ -117,6 +117,11 @@ if not conf.CheckExecutable('gperf'):
     build_msg("Need 'gperf' for perfect hash table generation")
     Exit(1)
 
+# Check for existence of libjson-c
+if not conf.CheckLibWithHeader('json-c', 'json-c/json.h', 'c'):
+    build_msg("Need libjson-c for exporting data to json format")
+    Exit(1)
+
 # Check if we have LLVM (check for llvm-config) TODO: find better way
 if not conf.CheckExecutable('llvm-config'):
     build_msg("Need llvm. At the moment LLVM IR is the only backend")
