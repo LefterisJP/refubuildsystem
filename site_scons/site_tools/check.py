@@ -14,14 +14,18 @@ def emit_check(target, source, env):
     variant_dir = env.get('CHECK_VARIANT_DIR', 'build_test')
     test_dir = env.get('CHECK_TEST_DIR', 'test')
     src_dir = env.get('CHECK_SRC_DIR', 'src')
+    lib_dir = env.get('CHECK_LIB_DIR', 'lib')
     exec_name = env.get('CHECK_EXEC_NAME', 'check_exec')
 
-    # Create a Variant dir for the tests and sources
+    # Create a Variant dir for each of the possibly used directories
     env.VariantDir(os.path.join(variant_dir, test_dir),
                    test_dir,
                    duplicate=0)
     env.VariantDir(os.path.join(variant_dir, src_dir),
                    src_dir,
+                   duplicate=0)
+    env.VariantDir(os.path.join(variant_dir, lib_dir),
+                   lib_dir,
                    duplicate=0)
 
     # TODO: Find out why the emitted sources are not visible in build_check
@@ -29,7 +33,7 @@ def emit_check(target, source, env):
 
     env.Clean(target, variant_dir)
     env.Clean(target, exec_name)
-    return  target, new_sources
+    return target, new_sources
 
 
 def build_check_str(target, source, env):
