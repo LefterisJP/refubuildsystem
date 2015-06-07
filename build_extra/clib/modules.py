@@ -62,7 +62,8 @@ modules.append(
             'Numeric/Integer/conversion.c',
             'Data_Structures/sbuffer.c',
             'Data_Structures/objset.c',
-            'Data_Structures/mbuffer.c'])
+            'Data_Structures/mbuffer.c',
+            'stdlib/io.c'])
 )
 
 modules.append(
