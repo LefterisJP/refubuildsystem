@@ -5,9 +5,9 @@ from time import gmtime, strftime
 
 from build_extra.utils import build_msg
 
-Import('modules local_env')
+Import('local_env')
 
-# this is a list of macro defines (Except the modules and the OS define) that
+# this is a list of macro defines (Except the OS define) that
 # should actually go to rf_options.h
 optionsList = ['_FILE_OFFSET_BITS',
                'RF_OPTION_THREADX_MSGQUEUE_SIZE',
@@ -57,12 +57,11 @@ f = open(temp_options_fname, "w")
 f.write(
     "/**\n"
     " ** This file contains the options that the refu library got built\n"
-    " ** with by the Scons Build system.It was generated at:\n"
+    " ** with by the Scons Build system. It was generated at:\n"
     " ** {} \n"
     " ** It is included from inside many files in the library so that \n"
     " ** the options can get included and that both the library and the\n"
-    " ** using program can know which modules are built and which are not, \n"
-    " ** along with other options\n **\n"
+    " ** using program can know with which options it is built, \n"
     " ** Note that options which are used only in the source files are \n"
     " **given to the compiler as flags during compiling and are not "
     "located here \n"
@@ -83,11 +82,6 @@ else:
     build_msg("Unsupported Operating system detected during creating "
               "the configuration header", "Error")
     Exit(1)
-
-# iterate through all the modules we need and report their existence
-# in rf_options.h  (skipping the core module)
-for mod in modules[1:]:
-    writeDef(f, mod.macro)
 
 # also write all the defines which should go in the options file
 for o in optionsList:
