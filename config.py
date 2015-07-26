@@ -53,7 +53,7 @@ def CheckCTypeOf(context):
 
 def CheckCAttributeCold(context):
     context.Message('Checking if the C compiler supports '
-                    '__attribute__((cold)) ...')
+                    '__attribute__((cold)) ... ')
     rc = context.TryCompile(
         "static int __attribute__((cold)) func(int x) { return x; }",
         ".c"
@@ -65,6 +65,86 @@ def CheckCAttributeCold(context):
         context.Result('Fail!')
         return False
 
+
+def CheckCAttributeConst(context):
+    context.Message('Checking if the C compiler supports '
+                    '__attribute__((const)) ... ')
+    rc = context.TryCompile(
+        "static int __attribute__((const)) func(int x) { return x; }",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
+
+def CheckCAttributeUnused(context):
+    context.Message('Checking if the C compiler supports '
+                    '__attribute__((unused)) ... ')
+    rc = context.TryCompile(
+        "static int __attribute__((unused)) func(int x) { return x; }",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
+
+def CheckCBuiltinChooseExpr(context):
+    context.Message('Checking if the C compiler supports '
+                    '__builtin__choose__expr() ...')
+    rc = context.TryCompile(
+        "int main() {"
+        "return __builtin_choose_expr(1, 0, \"garbage\");"
+        "}",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
+
+def CheckCBuiltinTypesCompatibleP(context):
+    context.Message('Checking if the C compiler supports '
+                    '__builtin_types_compatible_p() ...')
+    rc = context.TryCompile(
+        "int main() {"
+        "return __builtin_types_compatible_p(char *, int) ? 1 : 0;"
+        "}",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
+
+def CheckCBuiltinConstantP(context):
+    context.Message('Checking if the C compiler supports '
+                    '__builtin_constant_p() ...')
+    rc = context.TryCompile(
+        "int main() {"
+        "return __builtin_constant_p(1) ? 0 : 1;"
+        "}",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
 
 def CheckEndianess(context):
     context.Message('Checking system byte order ...')
@@ -105,6 +185,11 @@ conf = Configure(env, custom_tests={
     'CheckCTypeOf': CheckCTypeOf,
     'CheckEndianess': CheckEndianess,
     'CheckCAttributeCold': CheckCAttributeCold,
+    'CheckCAttributeConst': CheckCAttributeConst,
+    'CheckCAttributeUnused': CheckCAttributeUnused,
+    'CheckCBuiltinChooseExpr': CheckCBuiltinChooseExpr,
+    'CheckCBuiltinTypesCompatibleP': CheckCBuiltinTypesCompatibleP,
+    'CheckCBuiltinConstantP': CheckCBuiltinConstantP,
 })
 
 # Check for existence of check library for unit tests
@@ -161,6 +246,36 @@ if conf.CheckCAttributeCold():
 else:
     env['HAVE_ATTRIBUTE_COLD'] = False
 
+# Check if the C compiler supports the const function attribute
+if conf.CheckCAttributeConst():
+    env['HAVE_ATTRIBUTE_CONST'] = True
+else:
+    env['HAVE_ATTRIBUTE_CONST'] = False
+
+# Check if the C compiler supports the unused function attribute
+if conf.CheckCAttributeUnused():
+    env['HAVE_ATTRIBUTE_UNUSED'] = True
+else:
+    env['HAVE_ATTRIBUTE_UNUSED'] = False
+
+# Check if the C compiler supports the builtin choose expression
+if conf.CheckCBuiltinChooseExpr():
+    env['HAVE_BUILTIN_CHOOSE_EXPR'] = True
+else:
+    env['HAVE_BUILTIN_CHOOSE_EXPR'] = False
+
+# Check if the C compiler supports the builtin types compatible predicate
+if conf.CheckCBuiltinTypesCompatibleP():
+    env['HAVE_BUILTIN_TYPES_COMPATIBLE_P'] = True
+else:
+    env['HAVE_BUILTIN_TYPES_COMPATIBLE_P'] = False
+
+# Check if the C compiler supports the builtin constant predicate
+if conf.CheckCBuiltinConstantP():
+    env['HAVE_BUILTIN_CONSTANT_P'] = True
+else:
+    env['HAVE_BUILTIN_CONSTANT_P'] = False
+
 
 # Check the size of 'long' data type
 env['LONG_SIZE'] = conf.CheckTypeSize('long')
@@ -200,6 +315,18 @@ if env['HAVE_ATTRIBUTE_COLD']:
     env.Append(CPPDEFINES={"RFATTR_COLD": "__attribute__\(\(cold\)\)"})
 else:
     env.Append(CPPDEFINES={"RFATTR_COLD": None})
+
+# Define the const attribute macro depending on existence or not
+if env['HAVE_ATTRIBUTE_CONST']:
+    env.Append(CPPDEFINES={"RFATTR_CONST": "__attribute__\(\(const\)\)"})
+else:
+    env.Append(CPPDEFINES={"RFATTR_CONST": None})
+
+# Define the unused attribute macro depending on existence or not
+if env['HAVE_ATTRIBUTE_UNUSED']:
+    env.Append(CPPDEFINES={"RFATTR_UNUSED": "__attribute__\(\(unused\)\)"})
+else:
+    env.Append(CPPDEFINES={"RFATTR_UNUSED": None})
 
 # Define the endianess
 if env['ENDIANESS'] == 'LITTLE':
