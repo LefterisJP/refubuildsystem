@@ -58,7 +58,7 @@ Alias('format_ccore', format_core)
 
 # configure the environment
 env = SConscript('build_system/config.py', exports='env')
-env.Append(CCFLAGS=['-Wall', '-Werror'])
+env.Append(CCFLAGS=['-Wall', '-Wextra', '-Werror'])
 
 # Build the various repos
 if os.path.lexists(env['CLIB_DIR']):
