@@ -146,6 +146,20 @@ def CheckCBuiltinConstantP(context):
         context.Result('Fail!')
         return False
 
+def CheckCFlexibleArrayMembers(context):
+    context.Message('Checking if the C compiler supports '
+                    'flefible array members ...')
+    rc = context.TryCompile(
+        "struct foo { unsigned int x; int arr[]; };",
+        ".c"
+    )
+    if rc == 1:
+        context.Result('OK!')
+        return True
+    else:
+        context.Result('Fail!')
+        return False
+
 def CheckEndianess(context):
     context.Message('Checking system byte order ...')
     (rc, output) = context.TryRun(
@@ -190,6 +204,7 @@ conf = Configure(env, custom_tests={
     'CheckCBuiltinChooseExpr': CheckCBuiltinChooseExpr,
     'CheckCBuiltinTypesCompatibleP': CheckCBuiltinTypesCompatibleP,
     'CheckCBuiltinConstantP': CheckCBuiltinConstantP,
+    'CheckCFlexibleArrayMembers': CheckCFlexibleArrayMembers,
 })
 
 # Check for existence of check library for unit tests
@@ -276,6 +291,12 @@ if conf.CheckCBuiltinConstantP():
 else:
     env['HAVE_BUILTIN_CONSTANT_P'] = False
 
+# Check if the C compiler supports flexible array members
+if conf.CheckCFlexibleArrayMembers():
+    env['HAVE_FLEXIBLE_ARRAY_MEMBER'] = True
+else:
+    env['HAVE_FLEXIBLE_ARRAY_MEMBER'] = False
+
 
 # Check the size of 'long' data type
 env['LONG_SIZE'] = conf.CheckTypeSize('long')
@@ -327,6 +348,10 @@ if env['HAVE_ATTRIBUTE_UNUSED']:
     env.Append(CPPDEFINES={"RFATTR_UNUSED": "__attribute__\(\(unused\)\)"})
 else:
     env.Append(CPPDEFINES={"RFATTR_UNUSED": None})
+
+# Define the flexible array member macro depending on existence
+if env['HAVE_FLEXIBLE_ARRAY_MEMBER']:
+    env.Append(CPPDEFINES={"RF_HAVE_FLEXIBLE_ARRAY_MEMBER": None})
 
 # Define the endianess
 if env['ENDIANESS'] == 'LITTLE':
