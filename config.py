@@ -353,6 +353,14 @@ else:
 if env['HAVE_FLEXIBLE_ARRAY_MEMBER']:
     env.Append(CPPDEFINES={"RF_HAVE_FLEXIBLE_ARRAY_MEMBER": None})
 
+# Define type_compatible_p depending on existence
+if env['HAVE_BUILTIN_TYPES_COMPATIBLE_P']:
+    env.Append(CPPDEFINES={"RF_HAVE_BUILTIN_TYPES_COMPATIBLE_P": None})
+
+# Define builtin_constant_p depending on macro existence
+if env['HAVE_BUILTIN_CONSTANT_P']:
+    env.Append(CPPDEFINES={"RF_HAVE_BUILTIN_CONSTANT_P": None})
+
 # Define the endianess
 if env['ENDIANESS'] == 'LITTLE':
     env.Append(CPPDEFINES={"RF_HAVE_LITTLE_ENDIAN": None})
