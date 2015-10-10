@@ -100,7 +100,7 @@ if local_env['LONG_SIZE'] == 8:
     f.write("\t#define Long int\n")
 f.write("#endif//end of dtoa.c only definitions\n")
 # also give the detected endianess definition for the system at compile time
-if local_env['ENDIANESS'] == 'BIG':
+if local_env.get('RF_HAVE_BIG_ENDIAN'):
     writeDef(f, 'RF_BIG_ENDIAN_COMPILE')
 else:
     writeDef(f, 'RF_LITTLE_ENDIAN_COMPILE')

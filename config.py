@@ -18,6 +18,20 @@ def CheckExecutable(context, executable):
     return path
 
 
+def tryCompile(msg, program):
+    def tryCompileFn(context):
+        context.Message(
+            "Checking if the C compiler supports {} ...".format(msg)
+        )
+        if context.TryCompile(program, '.c'):
+            context.Result('OK!')
+            return True
+        else:
+            context.Result('Fail!')
+            return False
+    return tryCompileFn
+
+
 def CheckCStatementExpr(context):
     context.Message('Checking if the C compiler supports '
                     'statements expressions ...')
@@ -33,132 +47,6 @@ def CheckCStatementExpr(context):
         context.Result('FAIL!')
         return False
 
-
-def CheckCTypeOf(context):
-    context.Message('Checking if the C compiler supports '
-                    'the typeof() macro ...')
-    rc = context.TryCompile(
-        "#include <stddef.h>\n"
-        "int main(int argc, char **argv)"
-        "{typeof(int); return 0;}",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-
-def CheckCAttributeCold(context):
-    context.Message('Checking if the C compiler supports '
-                    '__attribute__((cold)) ... ')
-    rc = context.TryCompile(
-        "static int __attribute__((cold)) func(int x) { return x; }",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-
-def CheckCAttributeConst(context):
-    context.Message('Checking if the C compiler supports '
-                    '__attribute__((const)) ... ')
-    rc = context.TryCompile(
-        "static int __attribute__((const)) func(int x) { return x; }",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-
-def CheckCAttributeUnused(context):
-    context.Message('Checking if the C compiler supports '
-                    '__attribute__((unused)) ... ')
-    rc = context.TryCompile(
-        "static int __attribute__((unused)) func(int x) { return x; }",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-
-def CheckCBuiltinChooseExpr(context):
-    context.Message('Checking if the C compiler supports '
-                    '__builtin__choose__expr() ...')
-    rc = context.TryCompile(
-        "int main() {"
-        "return __builtin_choose_expr(1, 0, \"garbage\");"
-        "}",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-
-def CheckCBuiltinTypesCompatibleP(context):
-    context.Message('Checking if the C compiler supports '
-                    '__builtin_types_compatible_p() ...')
-    rc = context.TryCompile(
-        "int main() {"
-        "return __builtin_types_compatible_p(char *, int) ? 1 : 0;"
-        "}",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-
-def CheckCBuiltinConstantP(context):
-    context.Message('Checking if the C compiler supports '
-                    '__builtin_constant_p() ...')
-    rc = context.TryCompile(
-        "int main() {"
-        "return __builtin_constant_p(1) ? 0 : 1;"
-        "}",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
-
-def CheckCFlexibleArrayMembers(context):
-    context.Message('Checking if the C compiler supports '
-                    'flefible array members ...')
-    rc = context.TryCompile(
-        "struct foo { unsigned int x; int arr[]; };",
-        ".c"
-    )
-    if rc == 1:
-        context.Result('OK!')
-        return True
-    else:
-        context.Result('Fail!')
-        return False
 
 def CheckEndianess(context):
     context.Message('Checking system byte order ...')
@@ -193,19 +81,81 @@ def CheckEndianess(context):
 
 Import('env')
 
-conf = Configure(env, custom_tests={
+
+class configValue():
+    def __init__(self, fn_name, msg, prog, envsetter_fn):
+        self.fn_name = fn_name
+        self.msg = msg
+        self.prog = prog
+        self.envsetter_fn = envsetter_fn
+
+    def getTest(self):
+        return self.fn_name, tryCompile(self.msg, self.prog)
+
+    def runTest(self, conf, env):
+        succ = getattr(conf, self.fn_name)()
+        self.envsetter_fn(env, succ)
+
+configMatrix = [
+    configValue(
+        'CheckCTypeOf', 'typeof() macro',
+        '#include <stddef.h>\n'
+        'int main(int argc, char **argv)'
+        '{typeof(int); return 0;}',
+        lambda env, succ: env.Append(CPPDEFINES="RF_HAVE_TYPEOF") if succ else None
+    ),
+    configValue(
+        'CheckCAttributeCold',
+        '__attribute__((cold))',
+        'static int __attribute__((cold)) func(int x) { return x; }',
+        lambda env, succ: env.Append(CPPDEFINES={"RFATTR_COLD": "__attribute__\(\(cold\)\)"}) if succ else env.Append(CPPDEFINES={"RFATTR_COLD": None})
+    ),
+    configValue(
+        'CheckCAttributeConst',
+        '__attribute__((const))',
+        'static int __attribute__((const)) func(int x) { return x; }',
+        lambda env, succ: env.Append(CPPDEFINES={"RFATTR_CONST": "__attribute__\(\(const\)\)"}) if succ else env.Append(CPPDEFINES={"RFATTR_CONST": None})
+    ),
+    configValue(
+        'CheckCAttributeUnused',
+        '__attribute__((unused))',
+        'static int __attribute__((unused)) func(int x) { return x; }',
+        lambda env, succ: env.Append(CPPDEFINES={"RFATTR_UNUSED": "__attribute__\(\(unused\)\)"}) if succ else env.Append(CPPDEFINES={"RFATTR_UNUSED": None})
+    ),
+    configValue(
+        'CheckCBuiltinChooseExpr',
+        '__builtin__choose__expr()',
+        'int main() { return __builtin_choose_expr(1, 0, \"garbage\"); }',
+        lambda env, succ: env.Append(CPPDEFINES="RF_HAVE_BUILTIN_CHOOSE_EXPR") if succ else None
+    ),
+    configValue(
+        'CheckCBuiltinTypesCompatibleP',
+        '__builtin_types_compatible_p',
+        'int main(){return __builtin_types_compatible_p(char *, int) ? 1 : 0;}',
+        lambda env, succ: env.Append(CPPDEFINES="RF_HAVE_BUILTIN_TYPES_COMPATIBLE_P") if succ else None
+    ),
+    configValue(
+        'CheckCBuiltinConstantP',
+        '__builtin_constant_p',
+        'int main() { return __builtin_constant_p(1) ? 0 : 1; }',
+        lambda env, succ: env.Append(CPPDEFINES="RF_HAVE_BUILTIN_CONSTANT_P") if succ else None
+    ),
+    configValue(
+        'CheckCFlexibleArrayMembers',
+        'flexible array members',
+        'struct foo { unsigned int x; int arr[]; };',
+        lambda env, succ: env.Append(CPPDEFINES="RF_HAVE_FLEXIBLE_ARRAY_MEMBER") if succ else None
+    )
+]
+
+testsDict = dict([v.getTest() for v in configMatrix])
+testsDict.update({
+    'CheckEndianess': CheckEndianess,
     'CheckExecutable': CheckExecutable,
     'CheckCStatementExpr': CheckCStatementExpr,
-    'CheckCTypeOf': CheckCTypeOf,
-    'CheckEndianess': CheckEndianess,
-    'CheckCAttributeCold': CheckCAttributeCold,
-    'CheckCAttributeConst': CheckCAttributeConst,
-    'CheckCAttributeUnused': CheckCAttributeUnused,
-    'CheckCBuiltinChooseExpr': CheckCBuiltinChooseExpr,
-    'CheckCBuiltinTypesCompatibleP': CheckCBuiltinTypesCompatibleP,
-    'CheckCBuiltinConstantP': CheckCBuiltinConstantP,
-    'CheckCFlexibleArrayMembers': CheckCFlexibleArrayMembers,
 })
+conf = Configure(env, custom_tests=testsDict)
+
 
 # Check for existence of check library for unit tests
 if not conf.CheckLibWithHeader('check', 'check.h', 'c'):
@@ -251,61 +201,18 @@ if not conf.CheckCStatementExpr():
 else:
     env.Append(CPPDEFINES="RF_HAVE_STATEMENT_EXPR")
 
-# Check if the C compiler supports the typeof macro
-if conf.CheckCTypeOf():
-    env.Append(CPPDEFINES="RF_HAVE_TYPEOF")
-
-# Check if the C compiler supports the cold attribute
-if conf.CheckCAttributeCold():
-    env['HAVE_ATTRIBUTE_COLD'] = True
-else:
-    env['HAVE_ATTRIBUTE_COLD'] = False
-
-# Check if the C compiler supports the const function attribute
-if conf.CheckCAttributeConst():
-    env['HAVE_ATTRIBUTE_CONST'] = True
-else:
-    env['HAVE_ATTRIBUTE_CONST'] = False
-
-# Check if the C compiler supports the unused function attribute
-if conf.CheckCAttributeUnused():
-    env['HAVE_ATTRIBUTE_UNUSED'] = True
-else:
-    env['HAVE_ATTRIBUTE_UNUSED'] = False
-
-# Check if the C compiler supports the builtin choose expression
-if conf.CheckCBuiltinChooseExpr():
-    env['HAVE_BUILTIN_CHOOSE_EXPR'] = True
-else:
-    env['HAVE_BUILTIN_CHOOSE_EXPR'] = False
-
-# Check if the C compiler supports the builtin types compatible predicate
-if conf.CheckCBuiltinTypesCompatibleP():
-    env['HAVE_BUILTIN_TYPES_COMPATIBLE_P'] = True
-else:
-    env['HAVE_BUILTIN_TYPES_COMPATIBLE_P'] = False
-
-# Check if the C compiler supports the builtin constant predicate
-if conf.CheckCBuiltinConstantP():
-    env['HAVE_BUILTIN_CONSTANT_P'] = True
-else:
-    env['HAVE_BUILTIN_CONSTANT_P'] = False
-
-# Check if the C compiler supports flexible array members
-if conf.CheckCFlexibleArrayMembers():
-    env['HAVE_FLEXIBLE_ARRAY_MEMBER'] = True
-else:
-    env['HAVE_FLEXIBLE_ARRAY_MEMBER'] = False
-
-
 # Check the size of 'long' data type
 env['LONG_SIZE'] = conf.CheckTypeSize('long')
 
 # Check System endianess
 if conf.CheckEndianess() == 1:
-    env['ENDIANESS'] = 'LITTLE'
+    env.Append(CPPDEFINES={"RF_HAVE_LITTLE_ENDIAN": None})
 else:
-    env['ENDIANESS'] = 'BIG'
+    env.Append(CPPDEFINES={"RF_HAVE_BIG_ENDIAN": None})
+
+# run all other config tests
+for v in configMatrix:
+    v.runTest(conf, env)
 
 env = conf.Finish()
 
@@ -330,49 +237,6 @@ env.Append(CPPDEFINES={'_FILE_OFFSET_BITS': 64})
 
 # Debug or not?
 set_debug_mode(env, env['DEBUG'] != 0)
-
-# Define the cold attribute macro depending on existence or not
-if env['HAVE_ATTRIBUTE_COLD']:
-    env.Append(CPPDEFINES={"RFATTR_COLD": "__attribute__\(\(cold\)\)"})
-else:
-    env.Append(CPPDEFINES={"RFATTR_COLD": None})
-
-# Define the const attribute macro depending on existence or not
-if env['HAVE_ATTRIBUTE_CONST']:
-    env.Append(CPPDEFINES={"RFATTR_CONST": "__attribute__\(\(const\)\)"})
-else:
-    env.Append(CPPDEFINES={"RFATTR_CONST": None})
-
-# Define the unused attribute macro depending on existence or not
-if env['HAVE_ATTRIBUTE_UNUSED']:
-    env.Append(CPPDEFINES={"RFATTR_UNUSED": "__attribute__\(\(unused\)\)"})
-else:
-    env.Append(CPPDEFINES={"RFATTR_UNUSED": None})
-
-# Define the flexible array member macro depending on existence
-if env['HAVE_FLEXIBLE_ARRAY_MEMBER']:
-    env.Append(CPPDEFINES={"RF_HAVE_FLEXIBLE_ARRAY_MEMBER": None})
-
-# Define type_compatible_p depending on existence
-if env['HAVE_BUILTIN_TYPES_COMPATIBLE_P']:
-    env.Append(CPPDEFINES={"RF_HAVE_BUILTIN_TYPES_COMPATIBLE_P": None})
-
-# Define builtin_constant_p depending on macro existence
-if env['HAVE_BUILTIN_CONSTANT_P']:
-    env.Append(CPPDEFINES={"RF_HAVE_BUILTIN_CONSTANT_P": None})
-
-# Define the endianess
-if env['ENDIANESS'] == 'LITTLE':
-    env.Append(CPPDEFINES={"RF_HAVE_LITTLE_ENDIAN": None})
-else:
-    env.Append(CPPDEFINES={"RF_HAVE_BIG_ENDIAN": None})
-
-# if env['COMPILER'] == 'gcc':
-#     env.Replace(tools=['gcc']])
-# else:
-#     build_msg('Only gcc is supported at the moment', 'Error', env)
-
-
 # set compiler
 env.Replace(CC=env['COMPILER'])
 # set compiler specific options
