@@ -56,13 +56,17 @@ vars.Add(
     os.path.abspath(os.path.join(os.pardir, 'documentation'))
 )
 
-# Add All the variable options which have
-# to do with the building of the library
 vars.Add('COMPILER',
          'The compiler name. Allowed values are: {}'.format(
              ','.join(allowedCompilers)
          ),
          'gcc', validator=checkCompilerValue)
+
+vars.Add(
+    BoolVariable('ADDRESS_SANITIZER',
+                 'If \'yes\' then the project will be build with address '
+                 'sanitizing option on.',
+                 'no'))
 
 vars.Add(
     PathVariable('COMPILER_DIR', 'The directory of the compiler. Will try'

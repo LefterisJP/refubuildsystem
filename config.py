@@ -237,12 +237,25 @@ env.Append(CPPDEFINES={'_FILE_OFFSET_BITS': 64})
 
 # Debug or not?
 set_debug_mode(env, env['DEBUG'] != 0)
+
+if env['ADDRESS_SANITIZER']:
+    env.Append(CCFLAGS=['-fsanitize=address'])
+    env.Append(LINKFLAGS=['-fsanitize=address'])
+
 # set compiler
-env.Replace(CC=env['COMPILER'])
-# set compiler specific options
 if env['COMPILER'] == 'gcc':
+    env.Replace(CC='gcc')
+    env.Replace(CXX='g++')
     env.Append(CCFLAGS=['-static-libgcc', '-std=gnu99'])
-# set compiler options irrespective of system
+elif env['COMPILER'] == 'clang':
+    env.Replace(CC='clang')
+    env.Replace(CXX='clang++')
+else:
+    build_msg("Unsuported Compiler \"{}\" "
+              "Requested...Quitting".format(env['COMPILER']), "Error")
+    Exit(1)
+
+# set compiler options irrespective of compiler
 env.Append(LIBS=['rt', 'pthread', 'm'])
 env.Append(CPPDEFINES={'REFU_COMPILING': None})
 env.Append(CPPPATH=os.path.join(env['CLIB_DIR'], 'include'))
