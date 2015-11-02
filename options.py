@@ -64,7 +64,7 @@ vars.Add('COMPILER',
 
 vars.Add(
     BoolVariable('ADDRESS_SANITIZER',
-                 'If \'yes\' then the project will be build with address '
+                 'If \'yes\' then the project will be built with address '
                  'sanitizing option on.',
                  'no'))
 
