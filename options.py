@@ -209,6 +209,13 @@ vars.Add(
         allowed_values=('1', '2', '3', '4')))
 
 vars.Add(
+    BoolVariable(
+        'WITH_GRAPHVIZ',
+        'If Graphviz is found in the system then compile with graphviz support',
+        'False')
+)
+
+vars.Add(
     EnumVariable('PARSER_IMPLEMENTATION',
                  'Specify the parser implementation to use in the font end',
                  'RECURSIVE_DESCENT',
