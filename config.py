@@ -183,15 +183,20 @@ if not conf.CheckExecutable('llvm-config'):
     build_msg("Need llvm. At the moment LLVM IR is the only backend")
     Exit(1)
 
-# Check if we have antlr4
-if not conf.CheckExecutable('antlr4'):
+# Check if we have antlr3
+if not conf.CheckExecutable('antlr3'):
     env.SetDefault(has_antlr=False)
-    if env['PARSER_IMPLEMENTATION'] == 'ANTLR':
-        build_msg("Requested an antlr4 parser implementation but 'antlr4' "
-                  "executable was not found in the system")
-        Exit(1)
 else:
     env.SetDefault(has_antlr=True)
+
+# Check if we have pcre2
+# Refer to: http://www.pcre.org/current/doc/html/
+if not conf.CheckExecutable('pcre2-config'):
+    build_msg("Did not find PCRE2(Perl Compatible Regular Expressions) library",
+              "Warning", env)
+    env.SetDefault(has_pcre2=False)
+else:
+    env.SetDefault(has_pcre2=True)
 
 # Check if we can run unit tests via valgrind
 if not conf.CheckExecutable('valgrind'):
